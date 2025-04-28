@@ -1,18 +1,10 @@
 import { ProductDetail } from "@/components/product-detail";
 import { stripe } from "@/lib/stripe";
 import { notFound } from "next/navigation";
-import type { Metadata } from "next";
 
 interface ProductPageProps {
   params: {
     id: string;
-  };
-}
-
-export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const product = await stripe.products.retrieve(params.id);
-  return {
-    title: product.name,
   };
 }
 
@@ -23,8 +15,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     });
 
     return <ProductDetail product={product} />;
-  } catch (error) {
-    // Optional: handle invalid product ID
+  } catch {
+    // Redirect to 404 page if product retrieval fails
     return notFound();
   }
 }
