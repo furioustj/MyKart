@@ -3,9 +3,16 @@ import { stripe } from "@/lib/stripe";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-// ✅ Don't use a shared PageProps type — define inline instead
+// ✅ Rename this to avoid conflicting with any 'PageProps' from a plugin
+type ProductPageParams = {
+  params: {
+    id: string;
+  };
+};
+
+// ✅ generateMetadata using explicit inline param type
 export async function generateMetadata(
-  { params }: { params: { id: string } }
+  { params }: ProductPageParams
 ): Promise<Metadata> {
   try {
     const product = await stripe.products.retrieve(params.id);
@@ -19,9 +26,9 @@ export async function generateMetadata(
   }
 }
 
-// ✅ Product page using clean, inline type for params
+// ✅ Page component using same safe renamed type
 export default async function ProductPage(
-  { params }: { params: { id: string } }
+  { params }: ProductPageParams
 ) {
   try {
     const product = await stripe.products.retrieve(params.id, {
