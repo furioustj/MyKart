@@ -3,15 +3,10 @@ import { stripe } from "@/lib/stripe";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-// Define the type for dynamic route props
-type PageProps = {
-  params: {
-    id: string;
-  };
-};
-
-// Optional: Generate dynamic metadata (e.g., <title>)
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+// ✅ Don't use a shared PageProps type — define inline instead
+export async function generateMetadata(
+  { params }: { params: { id: string } }
+): Promise<Metadata> {
   try {
     const product = await stripe.products.retrieve(params.id);
     return {
@@ -24,8 +19,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-// Main page component
-export default async function ProductPage({ params }: PageProps) {
+// ✅ Product page using clean, inline type for params
+export default async function ProductPage(
+  { params }: { params: { id: string } }
+) {
   try {
     const product = await stripe.products.retrieve(params.id, {
       expand: ["default_price"],
