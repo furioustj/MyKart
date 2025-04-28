@@ -3,19 +3,35 @@ import { stripe } from "@/lib/stripe";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-// ✅ Rename this to avoid conflicting with any 'PageProps' from a plugin
-type ProductPageParams = {
-  params: {
-    id: string;
-  };
-};
+// 👇 You no longer receive a plain object for params — it's a Promise
+export default async function ProductPage({
+  params
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
 
-// ✅ generateMetadata using explicit inline param type
-export async function generateMetadata(
-  { params }: ProductPageParams
-): Promise<Metadata> {
   try {
-    const product = await stripe.products.retrieve(params.id);
+    const product = await stripe.products.retrieve(id, {
+      expand: ["default_price"],
+    });
+
+    return <ProductDetail product={product} />;
+  } catch (error) {
+    return notFound();
+  }
+}
+
+// ✅ Optional: SEO metadata (if used)
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+
+  try {
+    const product = await stripe.products.retrieve(id);
     return {
       title: product.name,
     };
@@ -23,20 +39,5 @@ export async function generateMetadata(
     return {
       title: "Product Not Found",
     };
-  }
-}
-
-// ✅ Page component using same safe renamed type
-export default async function ProductPage(
-  { params }: ProductPageParams
-) {
-  try {
-    const product = await stripe.products.retrieve(params.id, {
-      expand: ["default_price"],
-    });
-
-    return <ProductDetail product={product} />;
-  } catch {
-    return notFound();
   }
 }
